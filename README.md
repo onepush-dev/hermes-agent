@@ -13,7 +13,13 @@ Hermes Agent is Nous Research's self-hosted agent runtime: chat platforms, tools
 ## Services
 | Service | Source | Notes |
 |---|---|---|
-| hermes-agent | `nousresearch/hermes-agent:v0.22.0@sha256:c69536a39e885b8943329bda68cdf44492458b96aa74a212239bde9d2aeb406a` | port 8642, public domain, volume `/opt/data`, health `/health`, CMD `gateway run` |
+| hermes-agent | `nousresearch/hermes-agent:v0.22.0@sha256:c69536a39e885b8943329bda68cdf44492458b96aa74a212239bde9d2aeb406a` | port 8642, public domain, volume `/opt/data`, health `/health`, start `hermes gateway run` |
+
+**Start command** (required — upstream default CMD is interactive CLI, which exits on Railway):
+```
+hermes gateway run
+```
+The repo `Dockerfile` sets the same `CMD`. Keep the image ENTRYPOINT (s6 `/init`).
 
 ## Variables
 | Variable | Template value | Secret |
@@ -30,7 +36,10 @@ Hermes Agent is Nous Research's self-hosted agent runtime: chat platforms, tools
 | TELEGRAM_BOT_TOKEN | `` (empty — set after deploy) | |
 | TELEGRAM_ALLOWED_USERS | `` (empty — set after deploy) | |
 | HERMES_API_URL | `https://${{RAILWAY_PUBLIC_DOMAIN}}/v1` | |
-| RAILWAY_RUN_UID | `0` (s6 entrypoint can chown the volume; app still drops to the hermes user) | |
+| HERMES_ALLOW_ROOT_GATEWAY | `1` (Railway may run the entrypoint as root; s6 still drops to the hermes user for services) | |
+| RAILWAY_RUN_UID | `0` (lets s6 chown `/opt/data` on first boot) | |
+| HERMES_UID | `10000` | |
+| HERMES_GID | `10000` | |
 
 ## After deploy
 1. Open Railway → service → **Variables** and copy `API_SERVER_KEY`.
@@ -40,9 +49,14 @@ Hermes Agent is Nous Research's self-hosted agent runtime: chat platforms, tools
 ```bash
 curl https://<your-domain>/v1/models \
   -H "Authorization: Bearer $API_SERVER_KEY"
+
+curl https://<your-domain>/v1/chat/completions \
+  -H "Authorization: Bearer $API_SERVER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"hermes-agent","messages":[{"role":"user","content":"Hello"}]}'
 ```
 
-Health (no auth): `GET https://<your-domain>/health` → `200`.
+Health (no auth): `GET https://<your-domain>/health` → `200` `{"status":"ok","platform":"hermes-agent","version":"0.22.0"}`.
 
 ## Notes
 - Health: `/health` (Railway lifecycle). First boot can take a few minutes while config is seeded — healthcheck timeout is 300s.
