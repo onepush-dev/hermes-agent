@@ -1,6 +1,6 @@
 # Hermes Agent — Nous Research AI agent gateway (OpenAI-compatible API). Deploy on Railway with one click.
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/TEMPLATE_CODE)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/bNpOxM)
 
 Hermes Agent is Nous Research's self-hosted agent runtime: chat platforms, tools, and an OpenAI-compatible HTTP API on one gateway. This template ships the **official** `nousresearch/hermes-agent` image, digest-pinned, with the correct persistent volume and zero required deploy-time inputs.
 
@@ -59,6 +59,7 @@ curl https://<your-domain>/v1/chat/completions \
 Health (no auth): `GET https://<your-domain>/health` → `200` `{"status":"ok","platform":"hermes-agent","version":"0.22.0"}`.
 
 ## Notes
+- Template editor (unpublished): https://railway.com/workspace/templates/5d1812bb-64f4-4a4f-bb6b-9be81ffb3377
 - Health: `/health` (Railway lifecycle). First boot can take a few minutes while config is seeded — healthcheck timeout is 300s.
 - Volume `/opt/data` is the single source of truth for Hermes state — run **one replica** only.
 - Do **not** mount `/data`; that path is incorrect for this image.
