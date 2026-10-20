@@ -3,6 +3,9 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
+# Railway start commands replace the image ENTRYPOINT. Chown the fresh (root-owned) volume,
+# then exec the upstream entrypoint so s6 stage2 setup runs as PID 1 before the gateway.
+startCommand = "sh -c 'mkdir -p /opt/data && chown -R 10000:10000 /opt/data && exec /opt/hermes/docker/entrypoint-dispatch.sh hermes gateway run'"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
